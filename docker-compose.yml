@@ -1,0 +1,131 @@
+version: "3.3"
+
+services:
+  nginx:
+    container_name: yii2_webrtc_nginx
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+      args:
+        - CERT
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ${YII_PATH}:/var/www/
+    restart: always
+    networks:
+      - yii2-network
+
+  php:
+    container_name: yii2_webrtc_php
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    ports:
+      - 9002:9000
+    volumes:
+      - ${YII_PATH}:/var/www
+    working_dir: /var/www
+    networks:
+      - yii2-network
+    restart: always
+
+  pgsql:
+    container_name: yii2_webrtc_pgsql
+    build:
+      dockerfile: Dockerfile
+      context: ./pgsql
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data:rw
+      - ./pgsql/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+    networks:
+      - yii2-network
+
+  mail:
+    container_name: yii2_webrtc_mail
+    build:
+      dockerfile: Dockerfile
+      context: ./mailhog
+    logging:
+      driver: "none"
+    ports:
+      - 1025:1025 # smtp server
+      - 8025:8025 # web
+    networks:
+      - yii2-network
+
+  rabbitmq:
+    container_name: yii2_webrtc_rabbitmq
+    build:
+      dockerfile: Dockerfile
+      context: ./rabbitmq
+    restart: unless-stopped
+    ports:
+      - "1883:1883" # MQTT
+      - "5672:5672" 
+      - "15675:15675" #web MQTT
+      - "15692:15692"
+    networks:
+      - yii2-network
+
+  janus:
+    container_name: yii2_webrtc_janus
+    build:
+      context: .
+      dockerfile: ./janus/Dockerfile
+      args:
+        - CERT
+    ports:
+      - "8088:8088" #janus http
+      - "8089:8089" #janus https
+      - "8188:8188" #janus ws
+      - "8989:8989" #janus wss
+      - "7088:7088"
+      - "7089:7089"
+    networks:
+      - yii2-network
+    restart: always
+
+  # elk:
+  #   container_name: yii2_webrtc_elk
+  #   build:
+  #       dockerfile: Dockerfile
+  #       context: ./elk
+  #   deploy:
+  #       resources:
+  #         limits:
+  #           memory: 512M
+  #         reservations:
+  #           memory: 128M
+  #   ports:
+  #       - "5601:5601"
+  #       - "9300:9300"
+  #       - "9200:9200"
+  #       - "5044:5044"
+  #   environment:
+  #       - ES_CONNECT_RETRY=300
+  #   networks:
+  #       - yii2-network
+
+  # redis:
+  #   container_name: yii2_webrtc_redis
+  #   build:
+  #     dockerfile: Dockerfile
+  #     context: ./redis
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - yii2-network
+
+networks:
+  yii2-network:
+    driver: bridge
