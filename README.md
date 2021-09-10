@@ -23,6 +23,12 @@ cp .env.example .env
 
 Edit your Yii project path as needed
 
+## Composer and Yii init
+```bash
+docker-compose run php composer update
+docker-compose run php php init --env=Development --overwrite=All --delete=All
+```
+
 ## Run
 ```bash
 ./start.sh
