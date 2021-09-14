@@ -10,8 +10,16 @@ Edit /etc/hosts file to add
 ## Set up Certs
 In the cert folder run
 ```bash
+mkdir cert/domain
+cd cert/domain
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout domain-selfsigned.key -out domain-selfsigned.crt
+cd ..
+mkdir cert/local
+cd cert/local
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout local-selfsigned.key -out local-selfsigned.crt
+cd ..
+mkdir cert/public
+cd cert/public
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout public-selfsigned.key -out public-selfsigned.crt
 ```
 
