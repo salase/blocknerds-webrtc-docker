@@ -28,7 +28,11 @@ RUN docker-php-ext-configure gd \
   docker-php-ext-install -j${NPROC} gd 
 
 # Install extensions
-RUN docker-php-ext-install pdo pdo_pgsql mbstring zip exif pcntl gd sockets
+RUN docker-php-ext-install mbstring zip exif pcntl gd sockets
+# Install Postgre PDO
+RUN apt-get install -y libpq-dev \
+    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+    && docker-php-ext-install pdo pdo_pgsql pgsql
 
 # Redis
 RUN pecl install -o -f redis \
