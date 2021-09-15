@@ -73,11 +73,8 @@ select_cert
 
 if [ -n "${CERT}" ]; then
     #sudo sysctl -w vm.max_map_count=262144
-    docker stop $(docker ps -aq)
+    if [[ $(docker ps -aq) ]]; then
+        docker stop $(docker ps -aq)
+    fi
     CERT=$CERT docker-compose up --build
-    #let containers=$(docker ps -aq)
-    #if [[ ! -z "containers" ]]; then
-    #    CERT=$CERT docker-compose up --build
-    #fi
 fi
-
